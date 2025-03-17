@@ -45,6 +45,6 @@ print(f"Selected piece : {bin(int(selected_piece,2))[2:].zfill(81)}")
 print(f"Selected move : {bin(selected_move)[2:].zfill(81)}")
 
 print(bin(bitboard_occupied))
-bitboard_occupied, bitboard_player = play_move(int(selected_piece,2), selected_move, bitboard_occupied, bitboard_player1)
+bitboard_occupied, bitboard_player1 = play_move(int(selected_piece,2), selected_move, bitboard_occupied, bitboard_player1)
 print(bin(bitboard_occupied))
 
