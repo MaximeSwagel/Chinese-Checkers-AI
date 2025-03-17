@@ -12,21 +12,57 @@ bmi2.pdep_native.restype = ctypes.c_uint64
 
 def pext(source: int, mask: int) -> int:
     """
-    Calls the PEXT function from the C library.
+    Calls the PEXT function from the C library on a 128 bit source and mask
+    by splitting them into two 64 bit parts and recombine results.
     """
-    return bmi2.pext_native(source, mask)
+    # Lower part is the first 64 bits, high is the next 64 bits
+    source_low = source & 0xFFFFFFFFFFFFFFFF
+    source_high = (source >> 64) & 0xFFFFFFFFFFFFFFFF
+
+    mask_low = mask & 0xFFFFFFFFFFFFFFFF
+    mask_high = (mask >> 64) & 0xFFFFFFFFFFFFFFFF
+
+    # Call pdep for both
+    extracted_low = bmi2.pext_native(source_low, mask_low)
+    extracted_high = bmi2.pext_native(source_high, mask_high)
+
+    # Counts the amount of 1 in the lower 64 bit mask
+    shift_amount = bin(mask_low).count('1')
+
+    # Combine the two by shifting the high part 64 to the left and or the two lines together
+    result = extracted_low | (extracted_high << shift_amount)
+
+    return result
 
 def pdep(source: int, mask: int) -> int:
     """
     Calls the PDEP function from the C library.
     """
-    return bmi2.pdep_native(source, mask)
+    # Count the number of 1 bits in the lower mask
+    lower_bit_count = bin(mask & 0xFFFFFFFFFFFFFFFF).count("1")
+
+    # divide the source into what belong in the lower section and higher section
+    source_low = source & ((1 << lower_bit_count) - 1)
+    source_high = source >> lower_bit_count
+
+    # Dividing the mask in two
+    mask_low = mask & 0xFFFFFFFFFFFFFFFF
+    mask_high = (mask >> 64) & 0xFFFFFFFFFFFFFFFF
+
+    # Call C function for lower and upper parts
+    deposited_low = bmi2.pdep_native(source_low, mask_low)
+    deposited_high = bmi2.pdep_native(source_high, mask_high)
+    
+    # Combine the two by shifting the high part 64 to the left and or the two lines together
+    result = deposited_low | (deposited_high << 64)
+
+    return result
 
 #Here in the C code you use 64 bits, isn't that too few for our 81 bits long board ?
 
 # Example usage
-source_bitboard = 0b000100000001000000000000011000000010000001000000000100000001000000000010000000001
-mask_bitboard =   0b000000000000000000000000011000001010000001100000000000000000000000000000000000000
+source_bitboard = 0b100100000001000000000000011000000010000001000000000100000001000000000010000000001
+mask_bitboard =   0b100100000000000000000000011000001010000001100000000000000000000000000000000000001
 
 # Perform PEXT (Extract)
 extracted = pext(source_bitboard, mask_bitboard)
@@ -35,7 +71,6 @@ print(f"PEXT Result: {bin(extracted)[2:]}")
 # Perform PDEP (Deposit)
 deposited = pdep(extracted, mask_bitboard)
 print(f"PDEP Result: {bin(deposited)[2:].zfill(81)}")
-
 
 """
 Planned logic
