@@ -61,7 +61,7 @@ if __name__ == "__main__":
     
     (bitboard_mapping, bitboard_player1, bitboard_player2, 
      bitboard_occupied, neighbors_masks, jump_masks, node_positions) = generate_bitboard(hex_layers, player_layers)
-    
+
     for i in range(81):
         test_pos = list(node_positions.values())[i]
         print_bitboard_binary(neighbors_masks[test_pos])
@@ -71,3 +71,6 @@ if __name__ == "__main__":
     for i in range(81):
         test_pos = list(node_positions.values())[i]
         print_bitboard_binary(jump_masks[test_pos])
+
+    print(node_positions)
+

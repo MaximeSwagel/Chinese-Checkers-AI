@@ -121,13 +121,13 @@ G, node_positions, player1_nodes, player2_nodes = generate_two_player_chinese_ch
 visual_positions = {node: (q, -r) for (q, r), node in node_positions.items()}
 
 plt.figure(figsize=(10, 10))
-nx.draw(G, visual_positions, with_labels=True, node_color="lightgray", edge_color="gray", node_size=500, font_size=8)
+nx.draw(G, visual_positions, with_labels=False, node_color="lightgray", edge_color="gray", node_size=500, font_size=8)
 
 nx.draw_networkx_nodes(G, visual_positions, nodelist=player1_nodes, node_color="red", node_size=500)
 nx.draw_networkx_nodes(G, visual_positions, nodelist=player2_nodes, node_color="blue", node_size=500)
 
 #Uncomment this line to show the (q,r) positions of the nodes
-#for (q, r), node in node_positions.items(): plt.text(visual_positions[node][0], visual_positions[node][1], f"({q},{r})", fontsize=8, ha='center', va='center', color="black", fontweight="bold")
+for (q, r), node in node_positions.items(): plt.text(visual_positions[node][0], visual_positions[node][1], f"({q},{r})", fontsize=8, ha='center', va='center', color="black", fontweight="bold")
 
 plt.title("2-Player Chinese Checkers Board")
 plt.show()

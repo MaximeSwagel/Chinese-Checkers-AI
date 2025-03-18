@@ -2,6 +2,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from bit_board_masks import *
 from bit_board_logic import bit_to_index ,extract_bits, moves, play_move
+from minimax_algo import best_move
 
 #THIS IS FULLY MADE BY GPT
 
@@ -155,11 +156,11 @@ def draw_bitboard(ax,
     # (No return; just finish drawing on ax)
 
 def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2, 
-                     hex_layers=9, player_layers=4):
+                     hex_layers=9, player_layers=4, ai_player=2):
     """
-    Runs an interactive, turn-by-turn game using your bitboard logic.
-    - Player1 = Red
-    - Player2 = Blue
+    Runs an interactive game where the user plays against the AI.
+    - Player1 (Red) is human
+    - Player2 (Blue) is AI (if ai_player==2)
 
     This is an infinite loop until you close the figure or interrupt.
     """
@@ -169,7 +170,7 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
         "occupied": occupied_bitboard,
         "p1": bitboard_player1,
         "p2": bitboard_player2,
-        "turn": 1,  # 1 => Player1, 2 => Player2
+        "turn": 1,  # 1 => Player1 (human), 2 => Player2 (AI)
         "selected_piece_mask": 0,
         "possible_moves_mask": 0
     }
@@ -184,8 +185,8 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
         if game_state["turn"] == 1:
             turn_name = "Player 1 (RED)"
         else:
-            turn_name = "Player 2 (BLUE)"
-        ax.set_title(f"{turn_name}'s turn. Select a piece, then select a destination.")
+            turn_name = "Player 2 (BLUE - AI)"
+        ax.set_title(f"{turn_name}'s turn.")
 
         # Use our new draw_bitboard function
         highlight = game_state["possible_moves_mask"]  # squares to highlight
@@ -201,6 +202,9 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
 
     # 2) The callback for when the user clicks on the board
     def on_click(event):
+        if game_state["turn"] == ai_player:
+            return  # Ignore clicks if AI is playing
+
         # If user clicks outside our axes, ignore
         if event.inaxes != ax:
             return
@@ -299,6 +303,9 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
 
                 # Switch turn
                 game_state["turn"] = 2 if game_state["turn"] == 1 else 1
+                if game_state["turn"] == ai_player:
+                    plt.pause(1)
+                    ai_turn()
 
                 redraw()
             else:
@@ -311,6 +318,14 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
                 else:
                     # Otherwise, ignore
                     pass
+    
+    def ai_turn():
+        ai_move = best_move(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
+        if ai_move:
+            from_piece_mask, to_piece_mask = ai_move
+            game_state["occupied"], game_state["p2"] = play_move(from_piece_mask, to_piece_mask, game_state["occupied"], game_state["p2"])
+        game_state["turn"] = 1
+        redraw()
 
     # 3) Connect the callback
     cid = fig.canvas.mpl_connect("button_press_event", on_click)
