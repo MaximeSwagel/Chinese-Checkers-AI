@@ -9,7 +9,7 @@ Why spend 20 min manually making the board, when you can spend 5 hours trying to
 (q, r)
 
 Left        -> (q+2, r)
-Right       -> (q-2, r) #I think here left and right are inversed
+Right       -> (q-2, r)  #I think here left and right are inversed
 Up-left     -> (q-1, r-1)
 Up-right    -> (q+1, r-1)
 Down-left   -> (q-1, r+1)

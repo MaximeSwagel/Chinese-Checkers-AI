@@ -58,6 +58,7 @@ def visualize_bitboard(occ, p1, p2, hex_layers=9, player_layers=4):
     nx.draw_networkx_labels(G, visual_pos, {n: str(n) for n in G.nodes()}, font_size=8)
     plt.title("Bitboard-based Chinese Checkers")
     plt.axis("equal")
+    plt.show()
 
 """
 
