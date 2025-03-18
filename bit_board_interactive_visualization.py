@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from bit_board_masks import *
 from bit_board_logic import bit_to_index ,extract_bits, moves, play_move
 
-#THIS IS FULLY MADE BY GPT
+#This was made with the help of chat gpt
 
 def draw_bitboard(ax,
                   occupied_bitboard, 
@@ -188,7 +188,10 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
         ax.set_title(f"{turn_name}'s turn. Select a piece, then select a destination.")
 
         # Use our new draw_bitboard function
-        highlight = game_state["possible_moves_mask"]  # squares to highlight
+        # ##
+        # print(f"interactive_visualization/redraw : {bin(game_state['possible_moves_mask'])[2:].zfill(81)}") #this is wrong
+        # ##
+        highlight = game_state["possible_moves_mask"] # squares to highlight
         draw_bitboard(ax,
                       game_state["occupied"],
                       game_state["p1"],
@@ -266,7 +269,17 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
                 game_state["selected_piece_mask"] = mask_for_clicked
 
                 # Compute possible moves
+
+                # ##
+                # print(f"interactive_visualization/CASE_A : {bin(game_state['occupied'])[2:].zfill(81)}") #this is good
+                # print(f"interactive_visualization/CASE_A : {bin(mask_for_clicked)[2:].zfill(81)}")
+                # print(f"interactive_visualization/CASE_A : {bit_to_index(mask_for_clicked)}")
+                # ##
                 all_moves_mask = moves(mask_for_clicked, game_state["occupied"])
+                # ##
+                # print(f"interactive_visualization/CASE_A : {bin(all_moves_mask)[2:].zfill(81)}") #this is wrong
+                # ##
+
                 game_state["possible_moves_mask"] = all_moves_mask
                 redraw()
             else:

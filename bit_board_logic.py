@@ -60,17 +60,20 @@ def pdep(source: int, mask: int) -> int:
 
 #Here in the C code you use 64 bits, isn't that too few for our 81 bits long board ?
 
-# Example usage
-source_bitboard = 0b100100000001000000000000011000000010000001000000000100000001000000000010000000001
-mask_bitboard =   0b100100000000000000000000011000001010000001100000000000000000000000000000000000001
+# # Example usage
+# # source_bitboard = 0b100100000001000000000000011000000010000001000000000100000001000000000010000000001
+# # mask_bitboard =   0b100100000000000000000000011000001010000001100000000000000000000000000000000000001
 
-# Perform PEXT (Extract)
-extracted = pext(source_bitboard, mask_bitboard)
-print(f"PEXT Result: {bin(extracted)[2:]}")
+# source_bitboard = 0b100100000001000000000000011000000010000001000000000100000001000000000010000000001
+# mask_bitboard = 0b100100000001000000000000011000000010000001000000000100000001000000000010000000001
 
-# Perform PDEP (Deposit)
-deposited = pdep(extracted, mask_bitboard)
-print(f"PDEP Result: {bin(deposited)[2:].zfill(81)}")
+# # Perform PEXT (Extract)
+# extracted = pext(source_bitboard, mask_bitboard)
+# print(f"PEXT Result: {bin(extracted)[2:]}")
+
+# # Perform PDEP (Deposit)
+# deposited = pdep(extracted, mask_bitboard)
+# print(f"PDEP Result: {bin(deposited)[2:].zfill(81)}")
 
 """
 Planned logic
@@ -165,19 +168,41 @@ def intermediate_jump_moves(bit_piece, bitboard_occupied):
     # Use PEXT to see which neighbor bits are occupied and which jump bits are occupied:
     neighbor_compact        = pext(bitboard_occupied, neighbors_mask)
     occupied_jump_compact   = pext(bitboard_occupied, jumps_mask)
+    ##
+    print(bin(jumps_mask)[2:].zfill(81))
+    print(f"bit_board_logic/intermediate_jump_moves NEIGHBOUR COMPACT: {bin(neighbor_compact)[2:].zfill(81)}")
+    print(f"bit_board_logic/intermediate_jump_moves JUMPT COMPACT: {bin(occupied_jump_compact)[2:].zfill(81)}")
+    print(f"bit_board_logic/intermediate_jump_moves Exp NEIGBOUR COMPACT: {bin(pdep(neighbor_compact, neighbors_mask))[2:].zfill(81)}")
+    print(f"bit_board_logic/intermediate_jump_moves Exp JUMPT COMPACT: {bin(pdep(occupied_jump_compact, jumps_mask))[2:].zfill(81)}")
+    ##
     
     # "neighbor_compact AND NOT occupied_jump_compact"
     # means "the neighbor is occupied but the jump landing is free"
     # that is the 'intermediate' set:
     intermediate_compact = neighbor_compact & (~occupied_jump_compact)
+
+    ##
+    print(f"bit_board_logic/intermediate_jump_moves COMPACT: {bin(intermediate_compact)[2:].zfill(81)}")
+    print(f"bit_board_logic/intermediate_jump_moves exp COMPACT: {bin(pdep(intermediate_compact, jumps_mask))[2:].zfill(81)}")
+    ##
+    ##
+    print(f"bit_board_logic/intermediate_jump_moves : {bin(intermediate_compact)[2:].zfill(81)}")
+    ##
     
     # Now expand it (deposit) back into board space:
     intermediate_jump_move_masks = pdep(intermediate_compact, jumps_mask)
+    ##
+    print(f"bit_board_logic/intermediate_jump_moves : {bin(intermediate_jump_move_masks)[2:].zfill(81)}")
+    ##
     return intermediate_jump_move_masks
 
 def jump_moves(bit_piece, bitboard_occupied):
     new_moves_found = intermediate_jump_moves(bit_piece, bitboard_occupied)
     new_move_tracker = new_moves_found  # track everything we've found so far
+
+    ##
+    print(f"bit_board_logic/jump_moves : {bin(new_move_tracker)[2:].zfill(81)}")
+    ##
     
     while new_moves_found:
         new_move_bits = extract_bits(new_moves_found)
@@ -195,7 +220,15 @@ def jump_moves(bit_piece, bitboard_occupied):
 
 def moves(bit_piece, bitboard_occupied):
     # All possible moves from 'bit_piece' are single-step or jump-based:
-    all_moves = step_moves(bit_piece, bitboard_occupied) | jump_moves(bit_piece, bitboard_occupied)
+    step = step_moves(bit_piece, bitboard_occupied)
+    jump = jump_moves(bit_piece, bitboard_occupied)
+
+    ##
+    print(f"bit_board_logic/moves : {bin(bitboard_occupied)[2:].zfill(81)}")
+    print(f"bit_board_logic/moves : {bin(step)[2:].zfill(81)}")
+    print(f"bit_board_logic/moves : {bin(jump)[2:].zfill(81)}") #this is wrong 
+    ##
+    all_moves = step | jump
     return all_moves
 
 
