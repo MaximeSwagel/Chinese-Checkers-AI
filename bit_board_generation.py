@@ -23,11 +23,13 @@ def generate_bitboard(hex_layers, player_layers):
     # Precompute move masks
     neighbors_masks = {} # This stores the masks for the neightbors for each node
     jump_masks = {} # This stores the masks for the potential jumps for each node
+    jump_over_masks = {} #This stores the position that is jumped over
 
     # Loop through the neighbor nodes of the current node
     for node in node_positions.values():
         neighbors_mask = 0
         jump_mask = 0
+        jump_over_mask = 0
         for neighbor in G.neighbors(node):
             bit_pos = bitboard_mapping[neighbor]
             neighbors_mask |= bit_pos
@@ -43,11 +45,13 @@ def generate_bitboard(hex_layers, player_layers):
             if (q_jump, r_jump) in node_positions:
                 jump_pos = bitboard_mapping[node_positions[(q_jump, r_jump)]]
                 jump_mask |= jump_pos
+                jump_over_mask |= bit_pos
         
         neighbors_masks[node] = neighbors_mask
         jump_masks[node] = jump_mask
+        jump_over_masks[node] = jump_over_mask
     
-    return bitboard_mapping, bitboard_player1, bitboard_player2, bitboard_occupied, neighbors_masks, jump_masks, node_positions
+    return bitboard_mapping, bitboard_player1, bitboard_player2, bitboard_occupied, neighbors_masks, jump_masks, node_positions, jump_over_masks
 
 def print_bitboard_binary(bitboard):
     """
@@ -60,7 +64,7 @@ if __name__ == "__main__":
     player_layers = 4
     
     (bitboard_mapping, bitboard_player1, bitboard_player2, 
-     bitboard_occupied, neighbors_masks, jump_masks, node_positions) = generate_bitboard(hex_layers, player_layers)
+     bitboard_occupied, neighbors_masks, jump_masks, node_positions, jump_over_masks) = generate_bitboard(hex_layers, player_layers)
 
     for i in range(81):
         test_pos = list(node_positions.values())[i]
@@ -74,3 +78,6 @@ if __name__ == "__main__":
 
     print(node_positions)
 
+    for i in range(81):
+        test_pos = list(node_positions.values())[i]
+        print_bitboard_binary(jump_over_masks[test_pos])

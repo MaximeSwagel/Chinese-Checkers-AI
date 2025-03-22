@@ -161,7 +161,7 @@ def step_moves(bit_piece, bitboard_occupied):
 def intermediate_jump_moves(bit_piece, bitboard_occupied):
     piece_index = bit_to_index(bit_piece)
     # neighbors mask for that piece
-    neighbors_mask = neighbors_masks_list[piece_index]
+    neighbors_mask = jump_over_masks[piece_index]
     # potential jumps mask for that piece
     jumps_mask     = potential_jumps_list[piece_index]
     
@@ -169,11 +169,11 @@ def intermediate_jump_moves(bit_piece, bitboard_occupied):
     neighbor_compact        = pext(bitboard_occupied, neighbors_mask)
     occupied_jump_compact   = pext(bitboard_occupied, jumps_mask)
     ##
-    print(bin(jumps_mask)[2:].zfill(81))
-    print(f"bit_board_logic/intermediate_jump_moves NEIGHBOUR COMPACT: {bin(neighbor_compact)[2:].zfill(81)}")
-    print(f"bit_board_logic/intermediate_jump_moves JUMPT COMPACT: {bin(occupied_jump_compact)[2:].zfill(81)}")
-    print(f"bit_board_logic/intermediate_jump_moves Exp NEIGBOUR COMPACT: {bin(pdep(neighbor_compact, neighbors_mask))[2:].zfill(81)}")
-    print(f"bit_board_logic/intermediate_jump_moves Exp JUMPT COMPACT: {bin(pdep(occupied_jump_compact, jumps_mask))[2:].zfill(81)}")
+    # print(bin(jumps_mask)[2:].zfill(81))
+    # print(f"bit_board_logic/intermediate_jump_moves NEIGHBOUR COMPACT: {bin(neighbor_compact)[2:].zfill(81)}")
+    # print(f"bit_board_logic/intermediate_jump_moves JUMPT COMPACT: {bin(occupied_jump_compact)[2:].zfill(81)}")
+    # print(f"bit_board_logic/intermediate_jump_moves Exp NEIGBOUR COMPACT: {bin(pdep(neighbor_compact, neighbors_mask))[2:].zfill(81)}")
+    # print(f"bit_board_logic/intermediate_jump_moves Exp JUMPT COMPACT: {bin(pdep(occupied_jump_compact, jumps_mask))[2:].zfill(81)}")
     ##
     
     # "neighbor_compact AND NOT occupied_jump_compact"
@@ -182,17 +182,17 @@ def intermediate_jump_moves(bit_piece, bitboard_occupied):
     intermediate_compact = neighbor_compact & (~occupied_jump_compact)
 
     ##
-    print(f"bit_board_logic/intermediate_jump_moves COMPACT: {bin(intermediate_compact)[2:].zfill(81)}")
-    print(f"bit_board_logic/intermediate_jump_moves exp COMPACT: {bin(pdep(intermediate_compact, jumps_mask))[2:].zfill(81)}")
+    # print(f"bit_board_logic/intermediate_jump_moves COMPACT: {bin(intermediate_compact)[2:].zfill(81)}")
+    # print(f"bit_board_logic/intermediate_jump_moves exp COMPACT: {bin(pdep(intermediate_compact, jumps_mask))[2:].zfill(81)}")
     ##
     ##
-    print(f"bit_board_logic/intermediate_jump_moves : {bin(intermediate_compact)[2:].zfill(81)}")
+    # print(f"bit_board_logic/intermediate_jump_moves : {bin(intermediate_compact)[2:].zfill(81)}")
     ##
     
     # Now expand it (deposit) back into board space:
     intermediate_jump_move_masks = pdep(intermediate_compact, jumps_mask)
     ##
-    print(f"bit_board_logic/intermediate_jump_moves : {bin(intermediate_jump_move_masks)[2:].zfill(81)}")
+    # print(f"bit_board_logic/intermediate_jump_moves : {bin(intermediate_jump_move_masks)[2:].zfill(81)}")
     ##
     return intermediate_jump_move_masks
 
@@ -201,7 +201,7 @@ def jump_moves(bit_piece, bitboard_occupied):
     new_move_tracker = new_moves_found  # track everything we've found so far
 
     ##
-    print(f"bit_board_logic/jump_moves : {bin(new_move_tracker)[2:].zfill(81)}")
+    # print(f"bit_board_logic/jump_moves : {bin(new_move_tracker)[2:].zfill(81)}")
     ##
     
     while new_moves_found:
@@ -224,9 +224,9 @@ def moves(bit_piece, bitboard_occupied):
     jump = jump_moves(bit_piece, bitboard_occupied)
 
     ##
-    print(f"bit_board_logic/moves : {bin(bitboard_occupied)[2:].zfill(81)}")
-    print(f"bit_board_logic/moves : {bin(step)[2:].zfill(81)}")
-    print(f"bit_board_logic/moves : {bin(jump)[2:].zfill(81)}") #this is wrong 
+    # print(f"bit_board_logic/moves : {bin(bitboard_occupied)[2:].zfill(81)}")
+    # print(f"bit_board_logic/moves : {bin(step)[2:].zfill(81)}")
+    # print(f"bit_board_logic/moves : {bin(jump)[2:].zfill(81)}") #this is wrong 
     ##
     all_moves = step | jump
     return all_moves
