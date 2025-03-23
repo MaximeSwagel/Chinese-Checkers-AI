@@ -1,8 +1,11 @@
 import math
+import os
 from bit_board_logic import iterate_bits, moves, play_move, extract_bits, bit_to_index
 from functools import lru_cache
-
+from collections import defaultdict
 from bit_board_masks import ROW_MASKS
+
+search_stats = defaultdict(int)
 
 pos2ix = {(0, 0): 0, (-1, 1): 1, (1, 1): 2, (-2, 2): 3, (0, 2): 4, (2, 2): 5, (-3, 3): 6,
 (-1, 3): 7, (1, 3): 8, (3, 3): 9, (-4, 4): 10, (-2, 4): 11, (0, 4): 12, (2, 4): 13, (4, 4): 14,
@@ -117,7 +120,12 @@ def minimax(bitboard_player, bitboard_opponent, bitboard_occupied, depth, alpha,
     """
     Minimax algorithm with Alpha-Beta Pruning.
     """
+    # print(f"[PID {os.getpid()}] depth={depth}, maximizing={is_maximizing}")
+
+    search_stats['states'] += 1
+
     if depth == 0:
+        search_stats['leaf_paths'] += 1
         # print("board evaluation : ", evaluate_board(bitboard_player, bitboard_opponent))
         return evaluate_board_bit_board(bitboard_player, bitboard_opponent)
     
@@ -125,29 +133,37 @@ def minimax(bitboard_player, bitboard_opponent, bitboard_occupied, depth, alpha,
     
     if is_maximizing:
         best_score = -math.inf
+        move_count = 0
         for piece in all_pieces:
             # possible_moves = moves(piece, bitboard_occupied)
             # move_bits = extract_bits(possible_moves)
             for move in iterate_bits(moves(piece, bitboard_occupied)):
+                move_count += 1
                 new_occupied, new_player = play_move(piece, move, bitboard_occupied, bitboard_player)
                 score = minimax(new_player, bitboard_opponent, new_occupied, depth - 1, alpha, beta, False)
                 best_score = max(best_score, score)
                 alpha = max(alpha, score)
                 if beta <= alpha:
                     break  # Prune the branch
+        # print(f"[PID {os.getpid()}] depth={depth}, moves available: {move_count}")
+        search_stats['moves'] += move_count
         return best_score
     else:
         best_score = math.inf
+        move_count = 0
         for piece in all_pieces:
             # possible_moves = moves(piece, bitboard_occupied)
             # move_bits = extract_bits(possible_moves)
             for move in iterate_bits(moves(piece, bitboard_occupied)):
+                move_count += 1
                 new_occupied, new_opponent = play_move(piece, move, bitboard_occupied, bitboard_opponent)
                 score = minimax(bitboard_player, new_opponent, new_occupied, depth - 1, alpha, beta, True)
                 best_score = min(best_score, score)
                 beta = min(beta, score)
                 if beta <= alpha:
                     break  # Prune the branch
+        # print(f"[PID {os.getpid()}] depth={depth}, moves available: {move_count}")
+        search_stats['moves'] += move_count
         return best_score
 
 def best_move(bitboard_player, bitboard_opponent, bitboard_occupied, depth=4):
@@ -174,5 +190,10 @@ def best_move(bitboard_player, bitboard_opponent, bitboard_occupied, depth=4):
             alpha = max(alpha, score)
             if beta <= alpha:
                 break  # Prune the branch
-    
+    print("Search stats:")
+    print("States visited:", search_stats['states'])
+    print("Leaf paths reached:", search_stats['leaf_paths'])
+    print("Total moves considered:", search_stats['moves'])
+    print("Avg branching factor:", round(search_stats['moves'] / (search_stats['states']-search_stats['leaf_paths']), 2))
+
     return best_move_choice

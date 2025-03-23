@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from bit_board_masks import *
 from bit_board_logic import bit_to_index ,extract_bits, moves, play_move
 from minimax_algo import best_move
-from minimax_algo_parallelize import best_move_parallelized
+from minimax_algo_parallelize import best_move_hybrid, best_move_parallelized
 
 #This was made with the help of chat gpt
 
@@ -319,11 +319,14 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
 
                 # Switch turn
                 game_state["turn"] = 2 if game_state["turn"] == 1 else 1
+
+                redraw()
+
                 if game_state["turn"] == ai_player:
                     plt.pause(1)
                     ai_turn()
 
-                redraw()
+                
             else:
                 # Maybe they clicked a different piece of theirs to re-select
                 if (current_bb & mask_for_clicked) != 0:
@@ -341,10 +344,11 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
         #     globals(),
         #     locals()
         # )
-        # ai_move = best_move(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
-
+        
         start = time.perf_counter()
-        ai_move = best_move_parallelized(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
+        # ai_move = best_move(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
+        # ai_move = best_move_parallelized(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
+        ai_move = best_move_hybrid(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
         end = time.perf_counter()
         print(f"AI move took {end - start:.3f} seconds")
         if ai_move:
