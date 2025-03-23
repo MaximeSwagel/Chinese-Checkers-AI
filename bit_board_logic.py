@@ -253,3 +253,15 @@ def iterate_bits(bit_board: int):
         lsb = bit_board & -bit_board
         yield lsb
         bit_board &= bit_board - 1
+
+def ai_is_winning(bitboard_occupied):
+    if winning_masks[1] & bitboard_occupied == winning_masks[1]:
+        return True
+    else:
+        return False
+
+def human_is_winning(bitboard_occupied):
+    if winning_masks[0] & bitboard_occupied == winning_masks[0]:
+        return True
+    else:
+        return False
