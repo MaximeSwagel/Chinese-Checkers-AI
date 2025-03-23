@@ -266,4 +266,7 @@ for length in row_lengths:
     for _ in range(length):
         row_mask |= 1 << bit_index
         bit_index += 1
+        #print(bin(row_mask)[2:].zfill(81))
     ROW_MASKS.append(row_mask)
+
+winning_masks = [player2_pieces,player1_pieces] #first mask is checking is the player 1 is winning (is the player2_pieces full) and vice versa

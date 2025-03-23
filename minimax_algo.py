@@ -21,66 +21,66 @@ pos2ix = {(0, 0): 0, (-1, 1): 1, (1, 1): 2, (-2, 2): 3, (0, 2): 4, (2, 2): 5, (-
 
 ix2pos = {val:key for key,val in pos2ix.items()}
 
-@lru_cache(maxsize=100000)
-def evaluate_board(bitboard_player, bitboard_opponent):
-    """
-    Heuristic function to evaluate board position.
-    We evaluate the board by calculating the "mean position" of all pawns of each player.
-    This is done by summing the value of each pawns' row and dividing by the total number
-    of pawns (10). The player with the higher mean score is considered to be in a winning
-    position. 
-    """
-    bits_player = extract_bits(bitboard_player)
-    bits_opponent = extract_bits(bitboard_opponent)
-    indexes_player = []
-    indexes_opponent = []
+# @lru_cache(maxsize=100000)
+# def evaluate_board(bitboard_player, bitboard_opponent):
+#     """
+#     Heuristic function to evaluate board position.
+#     We evaluate the board by calculating the "mean position" of all pawns of each player.
+#     This is done by summing the value of each pawns' row and dividing by the total number
+#     of pawns (10). The player with the higher mean score is considered to be in a winning
+#     position. 
+#     """
+#     bits_player = extract_bits(bitboard_player)
+#     bits_opponent = extract_bits(bitboard_opponent)
+#     indexes_player = []
+#     indexes_opponent = []
 
-    forward_bonus = 5  # Encourages forward movement
-    backward_penalty = -3  # Discourages going backward
-    multi_jump_bonus = 5  # Reward for jumping multiple times in a row
+#     forward_bonus = 5  # Encourages forward movement
+#     backward_penalty = -3  # Discourages going backward
+#     multi_jump_bonus = 5  # Reward for jumping multiple times in a row
 
-    total_score = 0
+#     total_score = 0
 
-    for bit in bits_opponent:
-        index = bit_to_index(bit)
-        row = 16-ix2pos[index][1]
+#     for bit in bits_opponent:
+#         index = bit_to_index(bit)
+#         row = 16-ix2pos[index][1]
 
-        # Reward forward movement
-        total_score += row * forward_bonus  
+#         # Reward forward movement
+#         total_score += row * forward_bonus  
 
-        # Penalize backward movement
-        if row < 8:  # Assuming goal is reaching row 16
-            total_score += backward_penalty
+#         # Penalize backward movement
+#         if row < 8:  # Assuming goal is reaching row 16
+#             total_score += backward_penalty
 
-        if row > 8:  # Assuming goal is reaching row 16
-            total_score += multi_jump_bonus * row        
+#         if row > 8:  # Assuming goal is reaching row 16
+#             total_score += multi_jump_bonus * row        
 
-    # for bit in bits_opponent:
-    #     indexes_opponent.append(bit_to_index(bit))
-    # for bit in bits_player:
-    #     indexes_player.append(bit_to_index(bit))
+#     # for bit in bits_opponent:
+#     #     indexes_opponent.append(bit_to_index(bit))
+#     # for bit in bits_player:
+#     #     indexes_player.append(bit_to_index(bit))
 
-    indexes_player = get_indexes(bitboard_player)
-    indexes_opponent = get_indexes(bitboard_opponent)
+#     indexes_player = get_indexes(bitboard_player)
+#     indexes_opponent = get_indexes(bitboard_opponent)
     
-    mean_row_player = 0
-    mean_row_opponent = 0
+#     mean_row_player = 0
+#     mean_row_opponent = 0
 
-    # for key,val in ix2pos.items():
-    #     for index in indexes_player:
-    #         if key == index:
-    #             mean_row_player+=val[1]
-    #     for index in indexes_opponent:
-    #         if key == index:
-    #             mean_row_opponent+=16-val[1]
+#     # for key,val in ix2pos.items():
+#     #     for index in indexes_player:
+#     #         if key == index:
+#     #             mean_row_player+=val[1]
+#     #     for index in indexes_opponent:
+#     #         if key == index:
+#     #             mean_row_opponent+=16-val[1]
     
-    # mean_row_player = mean_row_player/10
-    # mean_row_opponent = mean_row_opponent/10
+#     # mean_row_player = mean_row_player/10
+#     # mean_row_opponent = mean_row_opponent/10
 
-    mean_row_player = sum(ix2pos[i][1] for i in indexes_player) / 10
-    mean_row_opponent = sum(16 - ix2pos[i][1] for i in indexes_opponent) / 10
+#     mean_row_player = sum(ix2pos[i][1] for i in indexes_player) / 10
+#     mean_row_opponent = sum(16 - ix2pos[i][1] for i in indexes_opponent) / 10
 
-    return total_score + mean_row_opponent - mean_row_player # Higher score is better
+#     return total_score + mean_row_opponent - mean_row_player # Higher score is better
 
 @lru_cache(maxsize=100000)
 def evaluate_board_bit_board(bitboard_player, bitboard_opponent):
@@ -166,34 +166,34 @@ def minimax(bitboard_player, bitboard_opponent, bitboard_occupied, depth, alpha,
         search_stats['moves'] += move_count
         return best_score
 
-def best_move(bitboard_player, bitboard_opponent, bitboard_occupied, depth=4):
-    """
-    Find the best move for the AI using Minimax with Alpha-Beta Pruning.
-    """
-    best_score = -math.inf
-    best_move_choice = None
-    alpha, beta = -math.inf, math.inf
+# def best_move(bitboard_player, bitboard_opponent, bitboard_occupied, depth=4):
+#     """
+#     Find the best move for the AI using Minimax with Alpha-Beta Pruning.
+#     """
+#     best_score = -math.inf
+#     best_move_choice = None
+#     alpha, beta = -math.inf, math.inf
     
-    for piece in iterate_bits(bitboard_player):
-        # possible_moves = moves(piece, bitboard_occupied)
-        # move_bits = extract_bits(possible_moves)
+#     for piece in iterate_bits(bitboard_player):
+#         # possible_moves = moves(piece, bitboard_occupied)
+#         # move_bits = extract_bits(possible_moves)
 
-        # # Sort moves: prioritize forward moves first
-        # move_bits.sort(key=lambda move: ix2pos[bit_to_index(move)][1] - ix2pos[bit_to_index(piece)][1], reverse=True)
+#         # # Sort moves: prioritize forward moves first
+#         # move_bits.sort(key=lambda move: ix2pos[bit_to_index(move)][1] - ix2pos[bit_to_index(piece)][1], reverse=True)
 
-        for move in iterate_bits(moves(piece, bitboard_occupied)):
-            new_occupied, new_player = play_move(piece, move, bitboard_occupied, bitboard_player)
-            score = minimax(new_player, bitboard_opponent, new_occupied, depth - 1, alpha, beta, False)
-            if score > best_score:
-                best_score = score
-                best_move_choice = (piece, move)
-            alpha = max(alpha, score)
-            if beta <= alpha:
-                break  # Prune the branch
-    print("Search stats:")
-    print("States visited:", search_stats['states'])
-    print("Leaf paths reached:", search_stats['leaf_paths'])
-    print("Total moves considered:", search_stats['moves'])
-    print("Avg branching factor:", round(search_stats['moves'] / (search_stats['states']-search_stats['leaf_paths']), 2))
+#         for move in iterate_bits(moves(piece, bitboard_occupied)):
+#             new_occupied, new_player = play_move(piece, move, bitboard_occupied, bitboard_player)
+#             score = minimax(new_player, bitboard_opponent, new_occupied, depth - 1, alpha, beta, False)
+#             if score > best_score:
+#                 best_score = score
+#                 best_move_choice = (piece, move)
+#             alpha = max(alpha, score)
+#             if beta <= alpha:
+#                 break  # Prune the branch
+#     print("Search stats:")
+#     print("States visited:", search_stats['states'])
+#     print("Leaf paths reached:", search_stats['leaf_paths'])
+#     print("Total moves considered:", search_stats['moves'])
+#     print("Avg branching factor:", round(search_stats['moves'] / (search_stats['states']-search_stats['leaf_paths']), 2))
 
-    return best_move_choice
+#     return best_move_choice

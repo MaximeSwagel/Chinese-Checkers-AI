@@ -4,10 +4,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from bit_board_masks import *
 from bit_board_logic import bit_to_index ,extract_bits, moves, play_move
-from minimax_algo import best_move
+# from minimax_algo import best_move
 from minimax_algo_parallelize import best_move_hybrid, best_move_parallelized
-
-#This was made with the help of chat gpt
 
 def draw_bitboard(ax,
                   occupied_bitboard, 
@@ -91,11 +89,6 @@ def draw_bitboard(ax,
 
     # 2) Convert (q,r) => (x,y) for plotting
     visual_positions = {i: (q, -r) for i, (q, r) in i2pos.items()}
-
-    # --------------------------------------------------------------------
-    # The rest of the function (clearing the Axes, drawing edges/nodes,
-    # labeling, highlighting, etc.) remains essentially the same.
-    # --------------------------------------------------------------------
 
     ax.clear()
     ax.set_aspect('equal')
