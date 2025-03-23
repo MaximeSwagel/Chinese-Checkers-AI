@@ -255,13 +255,15 @@ def iterate_bits(bit_board: int):
         bit_board &= bit_board - 1
 
 def ai_is_winning(bitboard_occupied):
-    if winning_masks[1] & bitboard_occupied == winning_masks[1]:
+    if (winning_masks[1] & bitboard_occupied) == winning_masks[1]:
+        #print(not((winning_masks[1] & bitboard_occupied) & ~winning_masks[1]))
         return True
     else:
         return False
 
 def human_is_winning(bitboard_occupied):
-    if winning_masks[0] & bitboard_occupied == winning_masks[0]:
+    if (winning_masks[0] & bitboard_occupied) == winning_masks[0]:
+        #print(not((winning_masks[0] & bitboard_occupied) & ~winning_masks[0]))
         return True
     else:
         return False

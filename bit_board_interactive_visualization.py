@@ -3,7 +3,7 @@ import time
 import networkx as nx
 import matplotlib.pyplot as plt
 from bit_board_masks import *
-from bit_board_logic import bit_to_index ,extract_bits, moves, play_move
+from bit_board_logic import bit_to_index ,extract_bits, moves, play_move, ai_is_winning, human_is_winning
 # from minimax_algo import best_move
 from minimax_algo_parallelize import best_move_hybrid, best_move_parallelized
 
@@ -168,7 +168,8 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
         "p2": bitboard_player2,
         "turn": 1,  # 1 => Player1 (human), 2 => Player2 (AI)
         "selected_piece_mask": 0,
-        "possible_moves_mask": 0
+        "possible_moves_mask": 0,
+        "first_move": True
     }
 
     # Create a figure and axes
@@ -180,9 +181,18 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
         # Whose turn is it?
         if game_state["turn"] == 1:
             turn_name = "Player 1 (RED)"
+            turn_text = "Player 1's Turn (RED)"
         else:
             turn_name = "Player 2 (BLUE - AI)"
+            turn_text = "AI's Turn (BLUE)"
         ax.set_title(f"{turn_name}'s turn.")
+            
+        if not game_state["first_move"]:
+            # Check if someone is winning
+            if human_is_winning(game_state["occupied"]):
+                turn_text = "Player 1 (RED) has won!"
+            elif ai_is_winning(game_state["occupied"]):
+                turn_text = "AI (BLUE) has won!"
 
         # Use our new draw_bitboard function
         # ##
@@ -197,10 +207,15 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
                       player_layers=player_layers,
                       highlight_mask=highlight)
 
+        # Display turn or win message
+        ax.text(0, 2, turn_text, fontsize=12, fontweight='bold', ha='center', bbox=dict(facecolor='white', edgecolor='black'))
+
         fig.canvas.draw_idle()
 
     # 2) The callback for when the user clicks on the board
     def on_click(event):
+        if (not game_state["first_move"]) and (human_is_winning(game_state["occupied"]) or ai_is_winning(game_state["occupied"])):
+            return
         if game_state["turn"] == ai_player:
             return  # Ignore clicks if AI is playing
 
@@ -319,6 +334,9 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
                     plt.pause(1)
                     ai_turn()
 
+                # if human_is_winning(game_state["occupied"]):
+                #     return
+
                 
             else:
                 # Maybe they clicked a different piece of theirs to re-select
@@ -337,6 +355,11 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
         #     globals(),
         #     locals()
         # )
+        if not game_state["first_move"]:
+            if ai_is_winning(game_state["occupied"]) or human_is_winning(game_state["occupied"]):  # Stop AI if it already won
+                return
+
+        game_state["first_move"]= False
         
         start = time.perf_counter()
         # ai_move = best_move(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
@@ -349,6 +372,9 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
             game_state["occupied"], game_state["p2"] = play_move(from_piece_mask, to_piece_mask, game_state["occupied"], game_state["p2"])
         game_state["turn"] = 1
         redraw()
+
+        # if ai_is_winning(game_state["occupied"]):
+        #     return
 
     # 3) Connect the callback
     cid = fig.canvas.mpl_connect("button_press_event", on_click)
