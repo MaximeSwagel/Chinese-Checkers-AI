@@ -255,3 +255,15 @@ jump_over_masks = [
     0b000110000000000000000000000000000000000000000000000000000000000000000000000000000,
     0b011000000000000000000000000000000000000000000000000000000000000000000000000000000
 ]
+
+
+row_lengths = [1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+ROW_MASKS = []
+
+bit_index = 0
+for length in row_lengths:
+    row_mask = 0
+    for _ in range(length):
+        row_mask |= 1 << bit_index
+        bit_index += 1
+    ROW_MASKS.append(row_mask)

@@ -1,5 +1,8 @@
 import math
-from bit_board_logic import moves, play_move, extract_bits, bit_to_index
+from bit_board_logic import iterate_bits, moves, play_move, extract_bits, bit_to_index
+from functools import lru_cache
+
+from bit_board_masks import ROW_MASKS
 
 pos2ix = {(0, 0): 0, (-1, 1): 1, (1, 1): 2, (-2, 2): 3, (0, 2): 4, (2, 2): 5, (-3, 3): 6,
 (-1, 3): 7, (1, 3): 8, (3, 3): 9, (-4, 4): 10, (-2, 4): 11, (0, 4): 12, (2, 4): 13, (4, 4): 14,
@@ -15,6 +18,7 @@ pos2ix = {(0, 0): 0, (-1, 1): 1, (1, 1): 2, (-2, 2): 3, (0, 2): 4, (2, 2): 5, (-
 
 ix2pos = {val:key for key,val in pos2ix.items()}
 
+@lru_cache(maxsize=100000)
 def evaluate_board(bitboard_player, bitboard_opponent):
     """
     Heuristic function to evaluate board position.
@@ -48,26 +52,66 @@ def evaluate_board(bitboard_player, bitboard_opponent):
         if row > 8:  # Assuming goal is reaching row 16
             total_score += multi_jump_bonus * row        
 
-    for bit in bits_opponent:
-        indexes_opponent.append(bit_to_index(bit))
-    for bit in bits_player:
-        indexes_player.append(bit_to_index(bit))
+    # for bit in bits_opponent:
+    #     indexes_opponent.append(bit_to_index(bit))
+    # for bit in bits_player:
+    #     indexes_player.append(bit_to_index(bit))
+
+    indexes_player = get_indexes(bitboard_player)
+    indexes_opponent = get_indexes(bitboard_opponent)
     
     mean_row_player = 0
     mean_row_opponent = 0
 
-    for key,val in ix2pos.items():
-        for index in indexes_player:
-            if key == index:
-                mean_row_player+=val[1]
-        for index in indexes_opponent:
-            if key == index:
-                mean_row_opponent+=16-val[1]
+    # for key,val in ix2pos.items():
+    #     for index in indexes_player:
+    #         if key == index:
+    #             mean_row_player+=val[1]
+    #     for index in indexes_opponent:
+    #         if key == index:
+    #             mean_row_opponent+=16-val[1]
     
-    mean_row_player = mean_row_player/10
-    mean_row_opponent = mean_row_opponent/10
+    # mean_row_player = mean_row_player/10
+    # mean_row_opponent = mean_row_opponent/10
+
+    mean_row_player = sum(ix2pos[i][1] for i in indexes_player) / 10
+    mean_row_opponent = sum(16 - ix2pos[i][1] for i in indexes_opponent) / 10
 
     return total_score + mean_row_opponent - mean_row_player # Higher score is better
+
+@lru_cache(maxsize=100000)
+def evaluate_board_bit_board(bitboard_player, bitboard_opponent):
+
+    def bit_count(x): return bin(x).count("1")
+
+    GOAL_ROW_TOP = {0, 1, 2}
+    GOAL_ROW_BOTTOM = {14, 15, 16}
+
+    player_score = 0
+    opponent_score = 0
+
+    for row in range(17):
+        mask = ROW_MASKS[row]
+        player_bits = bitboard_player & mask
+        opponent_bits = bitboard_opponent & mask
+
+        player_count = bit_count(player_bits)
+        opponent_count = bit_count(opponent_bits)
+
+        if row in GOAL_ROW_TOP:
+            player_score += player_count * 50
+        else:
+            player_score += player_count * (16 - row)
+
+        if row in GOAL_ROW_BOTTOM:
+            opponent_score += opponent_count * 50
+        else:
+            opponent_score += opponent_count * row
+
+    return player_score - opponent_score
+
+def get_indexes(bitboard):
+    return [bit_to_index(b) for b in extract_bits(bitboard)]
 
 def minimax(bitboard_player, bitboard_opponent, bitboard_occupied, depth, alpha, beta, is_maximizing):
     """
@@ -75,16 +119,16 @@ def minimax(bitboard_player, bitboard_opponent, bitboard_occupied, depth, alpha,
     """
     if depth == 0:
         # print("board evaluation : ", evaluate_board(bitboard_player, bitboard_opponent))
-        return evaluate_board(bitboard_player, bitboard_opponent)
+        return evaluate_board_bit_board(bitboard_player, bitboard_opponent)
     
     all_pieces = extract_bits(bitboard_player) if is_maximizing else extract_bits(bitboard_opponent)
     
     if is_maximizing:
         best_score = -math.inf
         for piece in all_pieces:
-            possible_moves = moves(piece, bitboard_occupied)
-            move_bits = extract_bits(possible_moves)
-            for move in move_bits:
+            # possible_moves = moves(piece, bitboard_occupied)
+            # move_bits = extract_bits(possible_moves)
+            for move in iterate_bits(moves(piece, bitboard_occupied)):
                 new_occupied, new_player = play_move(piece, move, bitboard_occupied, bitboard_player)
                 score = minimax(new_player, bitboard_opponent, new_occupied, depth - 1, alpha, beta, False)
                 best_score = max(best_score, score)
@@ -95,9 +139,9 @@ def minimax(bitboard_player, bitboard_opponent, bitboard_occupied, depth, alpha,
     else:
         best_score = math.inf
         for piece in all_pieces:
-            possible_moves = moves(piece, bitboard_occupied)
-            move_bits = extract_bits(possible_moves)
-            for move in move_bits:
+            # possible_moves = moves(piece, bitboard_occupied)
+            # move_bits = extract_bits(possible_moves)
+            for move in iterate_bits(moves(piece, bitboard_occupied)):
                 new_occupied, new_opponent = play_move(piece, move, bitboard_occupied, bitboard_opponent)
                 score = minimax(bitboard_player, new_opponent, new_occupied, depth - 1, alpha, beta, True)
                 best_score = min(best_score, score)
@@ -114,14 +158,14 @@ def best_move(bitboard_player, bitboard_opponent, bitboard_occupied, depth=4):
     best_move_choice = None
     alpha, beta = -math.inf, math.inf
     
-    for piece in extract_bits(bitboard_player):
-        possible_moves = moves(piece, bitboard_occupied)
-        move_bits = extract_bits(possible_moves)
+    for piece in iterate_bits(bitboard_player):
+        # possible_moves = moves(piece, bitboard_occupied)
+        # move_bits = extract_bits(possible_moves)
 
         # # Sort moves: prioritize forward moves first
-        # move_bits.sort(key=lambda move: ix2pos[bit_to_index(move)][1], reverse=True)
+        # move_bits.sort(key=lambda move: ix2pos[bit_to_index(move)][1] - ix2pos[bit_to_index(piece)][1], reverse=True)
 
-        for move in move_bits:
+        for move in iterate_bits(moves(piece, bitboard_occupied)):
             new_occupied, new_player = play_move(piece, move, bitboard_occupied, bitboard_player)
             score = minimax(new_player, bitboard_opponent, new_occupied, depth - 1, alpha, beta, False)
             if score > best_score:

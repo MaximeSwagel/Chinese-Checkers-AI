@@ -205,9 +205,9 @@ def jump_moves(bit_piece, bitboard_occupied):
     ##
     
     while new_moves_found:
-        new_move_bits = extract_bits(new_moves_found)
+        new_moves_copy = new_moves_found
         new_moves_found = 0
-        for position_bit in new_move_bits:
+        for position_bit in iterate_bits(new_moves_copy):
             # For each newly found jump position, see if we can jump further
             further_moves = intermediate_jump_moves(position_bit, bitboard_occupied)
             # Exclude moves we've already found
@@ -247,3 +247,9 @@ def play_move(bit_piece, bit_move, bitboard_occupied, bitboard_player):
     new_bitboard_occupied = bitboard_occupied ^ move_mask
     new_bitboard_player   = bitboard_player   ^ move_mask
     return new_bitboard_occupied, new_bitboard_player
+
+def iterate_bits(bit_board: int):
+    while bit_board:
+        lsb = bit_board & -bit_board
+        yield lsb
+        bit_board &= bit_board - 1

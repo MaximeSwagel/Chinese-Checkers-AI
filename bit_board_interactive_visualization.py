@@ -1,8 +1,11 @@
+import cProfile
+import time
 import networkx as nx
 import matplotlib.pyplot as plt
 from bit_board_masks import *
 from bit_board_logic import bit_to_index ,extract_bits, moves, play_move
 from minimax_algo import best_move
+from minimax_algo_parallelize import best_move_parallelized
 
 #This was made with the help of chat gpt
 
@@ -333,7 +336,17 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
                     pass
     
     def ai_turn():
-        ai_move = best_move(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
+        # cProfile.runctx(
+        #     "best_move(game_state['p2'], game_state['p1'], game_state['occupied'], depth=4)",
+        #     globals(),
+        #     locals()
+        # )
+        # ai_move = best_move(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
+
+        start = time.perf_counter()
+        ai_move = best_move_parallelized(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
+        end = time.perf_counter()
+        print(f"AI move took {end - start:.3f} seconds")
         if ai_move:
             from_piece_mask, to_piece_mask = ai_move
             game_state["occupied"], game_state["p2"] = play_move(from_piece_mask, to_piece_mask, game_state["occupied"], game_state["p2"])
