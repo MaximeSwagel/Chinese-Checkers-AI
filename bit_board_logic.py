@@ -1,61 +1,83 @@
 from bit_board_masks import *
-import ctypes
+# import ctypes
 
 # loading compiled c code
-bmi2 = ctypes.CDLL("./bmi2_bitops.so")
+# bmi2 = ctypes.CDLL("./bmi2_bitops.so")
 
-bmi2.pext_native.argtypes = [ctypes.c_uint64, ctypes.c_uint64]
-bmi2.pext_native.restype = ctypes.c_uint64
+# bmi2.pext_native.argtypes = [ctypes.c_uint64, ctypes.c_uint64]
+# bmi2.pext_native.restype = ctypes.c_uint64
 
-bmi2.pdep_native.argtypes = [ctypes.c_uint64, ctypes.c_uint64]
-bmi2.pdep_native.restype = ctypes.c_uint64
+# bmi2.pdep_native.argtypes = [ctypes.c_uint64, ctypes.c_uint64]
+# bmi2.pdep_native.restype = ctypes.c_uint64
+
+# def pext(source: int, mask: int) -> int:
+#     """
+#     Calls the PEXT function from the C library on a 128 bit source and mask
+#     by splitting them into two 64 bit parts and recombine results.
+#     """
+#     # Lower part is the first 64 bits, high is the next 64 bits
+#     source_low = source & 0xFFFFFFFFFFFFFFFF
+#     source_high = (source >> 64) & 0xFFFFFFFFFFFFFFFF
+
+#     mask_low = mask & 0xFFFFFFFFFFFFFFFF
+#     mask_high = (mask >> 64) & 0xFFFFFFFFFFFFFFFF
+
+#     # Call pdep for both
+#     extracted_low = bmi2.pext_native(source_low, mask_low)
+#     extracted_high = bmi2.pext_native(source_high, mask_high)
+
+#     # Counts the amount of 1 in the lower 64 bit mask
+#     shift_amount = bin(mask_low).count('1')
+
+#     # Combine the two by shifting the high part 64 to the left and or the two lines together
+#     result = extracted_low | (extracted_high << shift_amount)
+
+#     return result
+
+# def pdep(source: int, mask: int) -> int:
+#     """
+#     Calls the PDEP function from the C library.
+#     """
+#     # Count the number of 1 bits in the lower mask
+#     lower_bit_count = bin(mask & 0xFFFFFFFFFFFFFFFF).count("1")
+
+#     # divide the source into what belong in the lower section and higher section
+#     source_low = source & ((1 << lower_bit_count) - 1)
+#     source_high = source >> lower_bit_count
+
+#     # Dividing the mask in two
+#     mask_low = mask & 0xFFFFFFFFFFFFFFFF
+#     mask_high = (mask >> 64) & 0xFFFFFFFFFFFFFFFF
+
+#     # Call C function for lower and upper parts
+#     deposited_low = bmi2.pdep_native(source_low, mask_low)
+#     deposited_high = bmi2.pdep_native(source_high, mask_high)
+    
+#     # Combine the two by shifting the high part 64 to the left and or the two lines together
+#     result = deposited_low | (deposited_high << 64)
+
+#     return result
 
 def pext(source: int, mask: int) -> int:
-    """
-    Calls the PEXT function from the C library on a 128 bit source and mask
-    by splitting them into two 64 bit parts and recombine results.
-    """
-    # Lower part is the first 64 bits, high is the next 64 bits
-    source_low = source & 0xFFFFFFFFFFFFFFFF
-    source_high = (source >> 64) & 0xFFFFFFFFFFFFFFFF
-
-    mask_low = mask & 0xFFFFFFFFFFFFFFFF
-    mask_high = (mask >> 64) & 0xFFFFFFFFFFFFFFFF
-
-    # Call pdep for both
-    extracted_low = bmi2.pext_native(source_low, mask_low)
-    extracted_high = bmi2.pext_native(source_high, mask_high)
-
-    # Counts the amount of 1 in the lower 64 bit mask
-    shift_amount = bin(mask_low).count('1')
-
-    # Combine the two by shifting the high part 64 to the left and or the two lines together
-    result = extracted_low | (extracted_high << shift_amount)
-
+    """Pure Python implementation of PEXT"""
+    result = 0
+    bit_pos = 0
+    for i in range(128):
+        if (mask >> i) & 1:
+            if (source >> i) & 1:
+                result |= 1 << bit_pos
+            bit_pos += 1
     return result
 
 def pdep(source: int, mask: int) -> int:
-    """
-    Calls the PDEP function from the C library.
-    """
-    # Count the number of 1 bits in the lower mask
-    lower_bit_count = bin(mask & 0xFFFFFFFFFFFFFFFF).count("1")
-
-    # divide the source into what belong in the lower section and higher section
-    source_low = source & ((1 << lower_bit_count) - 1)
-    source_high = source >> lower_bit_count
-
-    # Dividing the mask in two
-    mask_low = mask & 0xFFFFFFFFFFFFFFFF
-    mask_high = (mask >> 64) & 0xFFFFFFFFFFFFFFFF
-
-    # Call C function for lower and upper parts
-    deposited_low = bmi2.pdep_native(source_low, mask_low)
-    deposited_high = bmi2.pdep_native(source_high, mask_high)
-    
-    # Combine the two by shifting the high part 64 to the left and or the two lines together
-    result = deposited_low | (deposited_high << 64)
-
+    """Pure Python implementation of PDEP"""
+    result = 0
+    bit_pos = 0
+    for i in range(128):
+        if (mask >> i) & 1:
+            if (source >> bit_pos) & 1:
+                result |= 1 << i
+            bit_pos += 1
     return result
 
 #Here in the C code you use 64 bits, isn't that too few for our 81 bits long board ?
