@@ -16,7 +16,7 @@ def minimax_wrapper(args):
     stats_snapshot = dict(search_stats)
     return score, (piece, move), stats_snapshot
 
-def best_move_parallelized(bitboard_player, bitboard_opponent, bitboard_occupied, depth=4):
+def best_move_parallelized(bitboard_player, bitboard_opponent, bitboard_occupied, depth=4, verbose=False):
     best_score = -math.inf
     best_move_choice = None
 
@@ -27,7 +27,6 @@ def best_move_parallelized(bitboard_player, bitboard_opponent, bitboard_occupied
     all_moves = []
     for piece in iterate_bits(bitboard_player):
         possible_moves = extract_bits(moves(piece, bitboard_occupied))
-        # Optional: add move sorting here again
         for move in possible_moves:
             all_moves.append((piece, move, bitboard_player, bitboard_opponent, bitboard_occupied, depth))
 
@@ -41,17 +40,18 @@ def best_move_parallelized(bitboard_player, bitboard_opponent, bitboard_occupied
             total_states += stats.get("states", 0)
             total_leaves += stats.get("leaf_paths", 0)
             total_moves += stats.get("moves", 0)
-
-    print()
-    print("Parallel search stats:")
-    print("Total states:", total_states)
-    print("Total leaf paths:", total_leaves)
-    print("Total moves considered:", total_moves)
-    print("Avg branching factor:", round(total_moves / (total_states-total_leaves), 2))
+    
+    if verbose:
+        print()
+        print("Parallel search stats:")
+        print("Total states:", total_states)
+        print("Total leaf paths:", total_leaves)
+        print("Total moves considered:", total_moves)
+        print("Avg branching factor:", round(total_moves / (total_states-total_leaves), 2))
 
     return best_move_choice
 
-def best_move_hybrid(bitboard_player, bitboard_opponent, bitboard_occupied, depth=4):
+def best_move_hybrid(bitboard_player, bitboard_opponent, bitboard_occupied, depth=4, verbose=False):
     best_score = -math.inf
     best_move_choice = None
 
@@ -75,12 +75,13 @@ def best_move_hybrid(bitboard_player, bitboard_opponent, bitboard_occupied, dept
             total_leaves += stats.get("leaf_paths", 0)
             total_moves += stats.get("moves", 0)
 
-    print()
-    print("\nHybrid search stats:")
-    print("Total states:", total_states)
-    print("Total leaf paths:", total_leaves)
-    print("Total moves considered:", total_moves)
-    print("Avg branching factor:", round(total_moves / (total_states-total_leaves), 2))
+    if verbose:
+        print()
+        print("\nHybrid search stats:")
+        print("Total states:", total_states)
+        print("Total leaf paths:", total_leaves)
+        print("Total moves considered:", total_moves)
+        print("Avg branching factor:", round(total_moves / (total_states-total_leaves), 2))
 
     return best_move_choice
 

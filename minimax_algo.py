@@ -120,13 +120,11 @@ def minimax(bitboard_player, bitboard_opponent, bitboard_occupied, depth, alpha,
     """
     Minimax algorithm with Alpha-Beta Pruning.
     """
-    # print(f"[PID {os.getpid()}] depth={depth}, maximizing={is_maximizing}")
 
     search_stats['states'] += 1
 
     if depth == 0:
         search_stats['leaf_paths'] += 1
-        # print("board evaluation : ", evaluate_board(bitboard_player, bitboard_opponent))
         return evaluate_board_bit_board(bitboard_player, bitboard_opponent)
     
     all_pieces = extract_bits(bitboard_player) if is_maximizing else extract_bits(bitboard_opponent)
@@ -145,7 +143,6 @@ def minimax(bitboard_player, bitboard_opponent, bitboard_occupied, depth, alpha,
                 alpha = max(alpha, score)
                 if beta <= alpha:
                     break  # Prune the branch
-        # print(f"[PID {os.getpid()}] depth={depth}, moves available: {move_count}")
         search_stats['moves'] += move_count
         return best_score
     else:
@@ -162,38 +159,40 @@ def minimax(bitboard_player, bitboard_opponent, bitboard_occupied, depth, alpha,
                 beta = min(beta, score)
                 if beta <= alpha:
                     break  # Prune the branch
-        # print(f"[PID {os.getpid()}] depth={depth}, moves available: {move_count}")
         search_stats['moves'] += move_count
         return best_score
 
-# def best_move(bitboard_player, bitboard_opponent, bitboard_occupied, depth=4):
-#     """
-#     Find the best move for the AI using Minimax with Alpha-Beta Pruning.
-#     """
-#     best_score = -math.inf
-#     best_move_choice = None
-#     alpha, beta = -math.inf, math.inf
+def best_move(bitboard_player, bitboard_opponent, bitboard_occupied, depth=4, verbose=False):
+    """
+    Find the best move for the AI using Minimax with Alpha-Beta Pruning.
+    """
+    best_score = -math.inf
+    best_move_choice = None
+    alpha, beta = -math.inf, math.inf
     
-#     for piece in iterate_bits(bitboard_player):
-#         # possible_moves = moves(piece, bitboard_occupied)
-#         # move_bits = extract_bits(possible_moves)
+    for piece in iterate_bits(bitboard_player):
+        # possible_moves = moves(piece, bitboard_occupied)
+        # move_bits = extract_bits(possible_moves)
 
-#         # # Sort moves: prioritize forward moves first
-#         # move_bits.sort(key=lambda move: ix2pos[bit_to_index(move)][1] - ix2pos[bit_to_index(piece)][1], reverse=True)
+        # # Sort moves: prioritize forward moves first
+        # move_bits.sort(key=lambda move: ix2pos[bit_to_index(move)][1] - ix2pos[bit_to_index(piece)][1], reverse=True)
 
-#         for move in iterate_bits(moves(piece, bitboard_occupied)):
-#             new_occupied, new_player = play_move(piece, move, bitboard_occupied, bitboard_player)
-#             score = minimax(new_player, bitboard_opponent, new_occupied, depth - 1, alpha, beta, False)
-#             if score > best_score:
-#                 best_score = score
-#                 best_move_choice = (piece, move)
-#             alpha = max(alpha, score)
-#             if beta <= alpha:
-#                 break  # Prune the branch
-#     print("Search stats:")
-#     print("States visited:", search_stats['states'])
-#     print("Leaf paths reached:", search_stats['leaf_paths'])
-#     print("Total moves considered:", search_stats['moves'])
-#     print("Avg branching factor:", round(search_stats['moves'] / (search_stats['states']-search_stats['leaf_paths']), 2))
+        for move in iterate_bits(moves(piece, bitboard_occupied)):
+            new_occupied, new_player = play_move(piece, move, bitboard_occupied, bitboard_player)
+            score = minimax(new_player, bitboard_opponent, new_occupied, depth - 1, alpha, beta, False)
+            if score > best_score:
+                best_score = score
+                best_move_choice = (piece, move)
+            alpha = max(alpha, score)
+            if beta <= alpha:
+                break  # Prune the branch
+    
+    if verbose:
+        print()
+        print("Search stats:")
+        print("States visited:", search_stats['states'])
+        print("Leaf paths reached:", search_stats['leaf_paths'])
+        print("Total moves considered:", search_stats['moves'])
+        print("Avg branching factor:", round(search_stats['moves'] / (search_stats['states']-search_stats['leaf_paths']), 2))
 
-#     return best_move_choice
+    return best_move_choice

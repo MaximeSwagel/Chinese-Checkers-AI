@@ -4,8 +4,9 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from bit_board_masks import *
 from bit_board_logic import bit_to_index ,extract_bits, moves, play_move, ai_is_winning, human_is_winning
-# from minimax_algo import best_move
+from minimax_algo import best_move
 from minimax_algo_parallelize import best_move_hybrid, best_move_parallelized
+from config import verbose
 
 def draw_bitboard(ax,
                   occupied_bitboard, 
@@ -361,12 +362,17 @@ def interactive_game(occupied_bitboard, bitboard_player1, bitboard_player2,
 
         game_state["first_move"]= False
         
-        start = time.perf_counter()
-        # ai_move = best_move(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
-        # ai_move = best_move_parallelized(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
-        ai_move = best_move_hybrid(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4)
-        end = time.perf_counter()
-        print(f"AI move took {end - start:.3f} seconds")
+        if verbose:
+            start = time.perf_counter()
+
+        # ai_move = best_move(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4, verbose=verbose)
+        # ai_move = best_move_parallelized(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4, verbose=verbose)
+        ai_move = best_move_hybrid(game_state["p2"], game_state["p1"], game_state["occupied"], depth=4, verbose=verbose)
+
+        if verbose:
+            end = time.perf_counter()
+            print(f"AI move took {end - start:.3f} seconds")
+
         if ai_move:
             from_piece_mask, to_piece_mask = ai_move
             game_state["occupied"], game_state["p2"] = play_move(from_piece_mask, to_piece_mask, game_state["occupied"], game_state["p2"])
