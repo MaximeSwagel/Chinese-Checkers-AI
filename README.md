@@ -1,9 +1,13 @@
-# 02180_intro_to_ai_group_28
-#This project was done in a group of 3 people for an assignment in course 02180 Intro to AI at DTU. Our goal was to implement an AI capable of playing a board game and implement the board game. 
+# Project Overview
+This project was developed in a group of three for the course *02180 – Introduction to AI* at DTU.  
+The assignment’s objective was to design a board game implementation and build an AI agent capable of playing it against a human player.
 
-We implemented the board game Chinese Checkers and AI agent capable of playing the game against a human player.
+We chose to implement **Chinese Checkers**, along with an AI agent that can play the game interactively.  
+The full assignment description is available in `Board_game_assignment_2025.pdf`.
 
-#The full assignment can be found in the Board_game_assignment_2025.pdf file
+# Collaboration
+The coding work was divided evenly, and we collaborated closely on all tasks.  
+For reference, the original group repository can be found [here](https://github.com/MagnusStarkadOttosen/02180_intro_to_ai_group_28).
 
 # How to run the game
 First, install the necessary packages:
