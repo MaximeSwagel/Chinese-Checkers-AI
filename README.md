@@ -2,7 +2,7 @@
 This project was developed in a group of three for the course *02180 – Introduction to AI* at DTU.  
 The assignment’s objective was to design a board game implementation and build an AI agent capable of playing it against a human player.
 
-We chose to implement **Chinese Checkers**, along with an AI agent that can play the game interactively.  
+We chose to implement **Chinese Checkers**, along with an AI agent that can play the game interactively mainly using the minimax algorithm.  
 The full assignment description is available in `Board_game_assignment_2025.pdf`.
 
 # Collaboration
